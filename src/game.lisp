@@ -5,24 +5,38 @@
 (defclass game ()
     ((name)
      (words
+      ;; data set of possible words
       :initarg :words)
      (target
+      ;; index of target word
       :initform nil)
      (player
+      ;; object of type 'agent'
       :initform nil
       :initarg :player)
      (player-prompt
+      ;; turn prompt
       :initarg :player-prompt
       :initform "Enter a five letter word: ")
      (max-turn
+      ;; self explanatory
       :initarg :max-turn
       :initform 6)))
 
 (defmethod init-game (game)
   (let ((words (slot-value game 'words)))
-    (setf (slot-value game 'target) (elt words (random (length words))))))
+    (setf (slot-value game 'target) (random (length words)))))
 
-(defun play (game)
+(defmethod get-word-by-index (index game)
+  (let ((words (slot-value game 'words)))
+    (elt words index)))
+
+(defmethod get-index-of-word (word game)
+  ;; returns index of word in words list or nil if does not exist
+  (let ((words (slot-value game 'words)))
+    (position word words :test #'string=)))
+
+(defun play (game) ;TODO - change to defmethod
   ;; Main Game loop, requires in instance of game
   ;; local game state
   (let ((player (slot-value game 'player))
@@ -32,15 +46,20 @@
         (feedback nil)
         (guess nil))
     ;; game loop
-    (dotimes (turn (slot-value game 'max-turn)) 
-      (setf guess (prompt-input player-prompt words player))
-      (setf feedback (check-word guess target))
-      (format-feedback guess feedback)
-      (cond ((string= guess target)
+    (dotimes (turn (slot-value game 'max-turn))
+      ;;todo - loop on guess until not null (valid word)
+      (setf guess
+            (get-index-of-word
+             (prompt-input player-prompt words player) game))
+      (setf feedback (check-word (get-word-by-index guess game)
+                                 (get-word-by-index target game)))
+      (format-feedback (get-word-by-index guess game) feedback)
+      (cond ((eql guess target)
              (format t "Winner, Winner Chicken Dinner~%")
              (return))
-            (t nil)))
-    (format t "The word was ~a~%" target)))
+            (t nil))
+      (setf guess nil))
+    (format t "The word was ~a~%" (get-word-by-index target game))))
 
 
 ;;; Helper Functions
