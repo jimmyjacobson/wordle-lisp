@@ -5,9 +5,9 @@
 
 (defvar *default-words* (uiop:read-file-lines "../data/words-easy.txt"))
 
-(defun make-game (&key (words *default-words*) (player 'human))
+(defun make-game (&key (words *default-words*) (player (make-instance 'human)))
   (let ((wordle (make-instance 'game
-                             :player (make-instance 'human)
-                             :words words)))
+                               :words words
+                               :player player)))
     (init-game wordle)
-    (play wordle)))
+    (play wordle))) 

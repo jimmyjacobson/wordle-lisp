@@ -33,3 +33,17 @@
 (defmethod prompt-input (prompt moves (agent human))
   (format t "~a: " prompt)
   (read-line))
+
+
+(defclass bot (agent)
+  ;; bots have strarting words and strategies
+  ((strategy ;; lambda that defines word choice funciton
+   :initarg :strategy
+   :initform #'(lambda () "tacos")
+   )))
+    
+
+
+(defmethod prompt-input (prompt moves (agent bot))
+  (declare (ignore prompt moves))
+  (funcall (slot-value agent 'strategy)))
