@@ -47,10 +47,13 @@
         (guess nil))
     ;; game loop
     (dotimes (turn (slot-value game 'max-turn))
-      ;;todo - loop on guess until not null (valid word)
-      (setf guess
-            (get-index-of-word
-             (prompt-input player-prompt words player) game))
+      ;;loop on guess until not null (valid word)
+      (loop for input = (get-index-of-word
+                         (prompt-input player-prompt words player)
+                         game)
+            until (not (null input))
+            do (format t "Not in word list~%")
+            finally (setf guess input))
       (setf feedback (check-word (get-word-by-index guess game)
                                  (get-word-by-index target game)))
       (format-feedback (get-word-by-index guess game) feedback)
