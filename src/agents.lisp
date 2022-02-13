@@ -4,7 +4,8 @@
 
 (defclass agent ()
   ((name
-    :initarg :name)
+    :initarg :name
+    :initform "Default")
    (wins
     :initform 0)
    (games-played
@@ -43,6 +44,8 @@
    )))
     
 
+(defmethod init-agent ((agent bot))
+  (declare (ignore agent)))
 
 (defmethod prompt-input (prompt moves (agent bot))
   (declare (ignore prompt moves))

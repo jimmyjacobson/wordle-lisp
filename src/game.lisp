@@ -21,7 +21,10 @@
      (max-turn
       ;; self explanatory
       :initarg :max-turn
-      :initform 6)))
+      :initform 6)
+     (game-state
+      ;;arbitrary list for storing game state
+      :initform nil)))
 
 (defmethod init-game (game)
   (let ((words (slot-value game 'words)))
@@ -36,6 +39,19 @@
   (let ((words (slot-value game 'words)))
     (position word words :test #'string=)))
 
+(defmethod write-game-results (game)
+  (let ((path (make-pathname
+               :directory '(:relative ".." "saves")
+               :name (format nil "~a"
+                             (slot-value (slot-value game 'player) 'name))
+               :type "txt")))
+  (with-open-file (out path
+                       :direction :output
+                       :if-does-not-exist :create
+                       :if-exists :append)
+    (with-standard-io-syntax
+      (print (slot-value game 'game-state) out)))))
+
 (defun play (game) ;TODO - change to defmethod
   ;; Main Game loop, requires in instance of game
   ;; local game state
@@ -46,6 +62,7 @@
         (feedback nil)
         (guess nil))
     ;; game loop
+    (push target (slot-value game 'game-state))
     (dotimes (turn (slot-value game 'max-turn))
       ;;loop on guess until not null (valid word)
       (loop for input = (get-index-of-word
@@ -54,15 +71,19 @@
             until (not (null input))
             do (format t "Not in word list~%")
             finally (setf guess input))
+      (push guess (slot-value game 'game-state)) ;; save guess in game state
       (setf feedback (check-word (get-word-by-index guess game)
                                  (get-word-by-index target game)))
       (format-feedback (get-word-by-index guess game) feedback)
+      ;; check for win, replace with function later
       (cond ((eql guess target)
              (format t "Winner, Winner Chicken Dinner~%")
-             (return))
+             (return)) ; return if game over because of win
             (t nil))
       (setf guess nil))
-    (format t "The word was ~a~%" (get-word-by-index target game))))
+    (format t "The word was ~a~%" (get-word-by-index target game))
+    ;; playing around with output game state for learning
+    (write-game-results game)))
 
 
 ;;; Helper Functions
